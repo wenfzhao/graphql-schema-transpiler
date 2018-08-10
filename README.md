@@ -1,5 +1,7 @@
 # graphql-type-inheritance
 Transpile Your Graphql Schema To Support Type Inheritance
+This is a transpiler to allow graphql schema to have inheritance between type, input and interface
+Single and multiple inheritance are supported amount type, input and interface
 
 # How To Use It
 ```js
