@@ -2,8 +2,10 @@
   "name": "graphql-type-inheritance",
   "version": "1.0.0",
   "description": "Transpile Your Graphql Schema To Support Type Inheritance",
-  "main": "./src/transpileSchema.js",
+  "main": "./dist/transpileSchema.js",
   "scripts": {
+    "build": "./node_modules/babel-cli/bin/babel.js src --out-dir dist --presets=es2015,stage-2 ",
+    "prepublish": "npm run build",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "repository": {
@@ -22,5 +24,10 @@
   "bugs": {
     "url": "https://github.com/wenfzhao/graphql-type-inheritance/issues"
   },
-  "homepage": "https://github.com/wenfzhao/graphql-type-inheritance#readme"
+  "homepage": "https://github.com/wenfzhao/graphql-type-inheritance#readme",
+  "devDependencies": {
+    "babel-cli": "^6.26.0",
+    "babel-preset-es2015": "^6.24.1",
+    "babel-preset-stage-2": "^6.24.1"
+  }
 }

@@ -243,3 +243,4 @@ const transpileSchema = schema => {
 }
 
 export default transpileSchema;
+exports.transpileSchema = transpileSchema;
