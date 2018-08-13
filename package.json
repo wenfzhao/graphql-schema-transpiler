@@ -1,5 +1,5 @@
 {
-  "name": "graphql-type-inheritance",
+  "name": "graphql-schema-transpiler",
   "version": "1.0.0",
   "description": "Transpile Your Graphql Schema To Support Type Inheritance",
   "main": "./dist/transpileSchema.js",
@@ -10,7 +10,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/wenfzhao/graphql-type-inheritance.git"
+    "url": "git+https://github.com/wenfzhao/graphql-schema-transpiler.git"
   },
   "keywords": [
     "graphql",
@@ -22,9 +22,9 @@
   "author": "Wen Feng Zhao",
   "license": "ISC",
   "bugs": {
-    "url": "https://github.com/wenfzhao/graphql-type-inheritance/issues"
+    "url": "https://github.com/wenfzhao/graphql-schema-transpiler/issues"
   },
-  "homepage": "https://github.com/wenfzhao/graphql-type-inheritance#readme",
+  "homepage": "https://github.com/wenfzhao/graphql-schema-transpiler#readme",
   "devDependencies": {
     "babel-cli": "^6.26.0",
     "babel-preset-es2015": "^6.24.1",

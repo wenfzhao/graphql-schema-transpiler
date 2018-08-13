@@ -43,7 +43,7 @@ type AddressBook extends EmailContact, PhoneContact {
     
 }
 
-//provide default to override inheritted field
+# provide default to override inheritted field
 input AddressBookInput extends AddressBook {
     contactId: ID
 }
