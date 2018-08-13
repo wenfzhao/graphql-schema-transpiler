@@ -1,7 +1,8 @@
 /**
- * Extract type name from definition
+ * Extracts type name from definition
  * 
- * @Return type|input
+ * @param {string} def - type definition
+ * @returns {string} - "type" or "input" or "interface"
  */
 const getTypeName = def => {
   const isType = def.startsWith('type');
@@ -20,6 +21,11 @@ const getTypeName = def => {
   return typeName;
 }
 
+/**
+ * Extracts type class name
+ * 
+ * @param {string} def - type definition
+ */
 const getClassName = def => {
   const regex = /(input|type|interface)\s+[a-zA-Z_]+\s+/g;
   const match = def.match(regex);  
@@ -27,18 +33,21 @@ const getClassName = def => {
 }
 
 /**
- * Extract inheritance data
+ * Extracts inheritance data
  * 
  * the following type def will return [ 'ContentItem', 'HeadlineItem' ]
  * type Content inherits ContentItem, HeadlineItem implements Item { ... }
+ * 
+ * @param {string} def - type definition
+ * @returns {[string]} - list of inherited classes
  */
 const getInheritances = def => {
-  const regex = /inherits\s+[a-zA-Z_\s,]+\s+/ig;
+  const regex = /extends\s+[a-zA-Z_\s,]+\s+/ig;
   const match = def.match(regex);  
   if (!match) {
     return null;
   }
-  let inherits = match[0].replace('inherits', '').trim();
+  let inherits = match[0].replace('extends', '').trim();
   const implementsIndex = inherits.lastIndexOf('implements');
   if (implementsIndex !== -1) {
     inherits = inherits.slice(0, implementsIndex);
@@ -48,15 +57,18 @@ const getInheritances = def => {
 }
 
 /**
- * Extract implementation data
+ * Extracts implementation data
  * 
  * the following type def will return [ 'Item' ]
  * type Content inherits ContentItem, HeadlineItem implements Item { ... }
+ * 
+ * @param {string} def - type definition
+ * @returns {[string]} - list of implemented classes
  */
 const getImplementations = def => {
   const regex = /implements\s+[a-zA-Z_\s,]+\s+/ig;
   const match = def.match(regex);  
-  if (!match) {
+  if (!match) {    
     return null;
   }
   const implenetsDef = match[0].replace('implements', '').trim();
@@ -65,7 +77,7 @@ const getImplementations = def => {
 }
 
 /**
- * Extract property data from type|input definition
+ * Extracts property data from type|input definition
  * 
  * [
  *   {
@@ -78,6 +90,9 @@ const getImplementations = def => {
  *   }, 
  *   ...
  * ]
+ * 
+ * @param {string} def - type definition
+ * @returns {[string: string]} - list of properties
  * 
  */
 const getProperties = def => {  
@@ -105,7 +120,7 @@ const getProperties = def => {
 }
 
 /**
- * Extract meta data from type|input definition
+ * Extracts meta data from type|input definition
  * 
  * {
  *  'typeName': 'type',
@@ -121,21 +136,27 @@ const getProperties = def => {
  *    }, 
  *    ...
  *  ],
- *  'definition': 'type Book { ... }'
+ *  'inheritances': ['Page', 'Item'],
+ *  'definition': 'type Book extends Page, Item { ... }'
  * }
  * 
+ * @param {string} def - type definition
+ * @returns {[string: string]} - definition meta data, see above example
  */
-const getDefinitionMetaData = def => {
+const getDefinitionMetaData = def => {  
   return {
     typeName: getTypeName(def),
     className: getClassName(def),
     properties: getProperties(def),
+    inheritances: getInheritances(def),
+    implementations: getImplementations(def),
     definition: def
   };
 }
 
 /**
- * get list of schema definitions
+ * Gets list of schema definitions
+ * 
  * {
  *  'Book': {
  *    'typeName': 'type',
@@ -160,19 +181,30 @@ const getDefinitionMetaData = def => {
  *  },
  *  ...
  * }  
+ * 
+ * @param {string} schema - schema string
+ * @returns {Object} - definition meta data, see above example, @see @function getDefinitionMetaData
  */
 const getSchemaDefinitions = schema => {
   const definitions = {};
-  //use regex to extract definitions
-  const typeAndInputRegex = /(input|type|interface)\s+[a-zA-Z_]+\s+{([^}]+)}/ig;
-  const typesAndInputs = schema.match(typeAndInputRegex);
-  for (let def of typesAndInputs) {
+
+  //regex to match all definitions
+  const regex = /(input|type|interface)\s+[a-zA-Z_]+\s+(extends\s+[a-zA-Z_\s,]+\s+)?(implements\s+[a-zA-Z_\s,]+\s+)?{([^}]+)}/ig;
+  const defs = schema.match(regex);
+  for (let def of defs) {
     const metaData = getDefinitionMetaData(def);    
     definitions[metaData.className] = metaData;    
   }
-  return definitions;
+  return definitions
 }
 
+/**
+ * Merges all properties
+ * 
+ * @param {Object} properties1 
+ * @param {Object} properties2 
+ * @returns {Object} - combined properties
+ */
 const mergeProperties = (properties1, properties2) => {
   const hasProperty = (name, properties) => {
     let hasProperty = false;
@@ -195,20 +227,18 @@ const mergeProperties = (properties1, properties2) => {
 }
 
 /**
- * Transpile a single type|input definition
+ * Generates graphql standard type definition
+ * 
+ * @param {Object} defMetaData - definition meta data, @see @function getDefinitionMetaData
+ * @returns {string} - graphql type definition
  */
-const transpileDef = (def, schemaDefinitions) => {
-  const typeName = getTypeName(def);
-  const className = getClassName(def);
-  const inheritances = getInheritances(def);
-  const implementations = getImplementations(def);
-  let properties = getProperties(def);
-  if (inheritances) {
-    for (let inheritClass of inheritances.reverse()) {
-      const definition = schemaDefinitions[inheritClass];
-      properties = mergeProperties(properties, definition.properties);      
-    }
-  }
+const generateDef = (defMetaData) => {
+  const {
+    typeName,
+    className,
+    properties,
+    implementations,
+  } = defMetaData;
 
   let transpiledDef = typeName + ' ' + className + ' ';
   if (implementations) {
@@ -219,24 +249,80 @@ const transpileDef = (def, schemaDefinitions) => {
     transpiledDef += '     ' + property.name + ': ' + property.type + '\n';
   }
   transpiledDef += '}\n';
-  // console.log(def, '\n', transpiledDef);
   return transpiledDef;
 }
 
 /**
- * Transpile schema to support type|input inheritance
+ * Transpiles a single type|input|interface definition
+ * 
+ * @param {string} defClassName - name of type def to transpile
+ * @param {Object} schemaDefinitions -  meta data of all type definitions
+ * @returns {Object} - meta data of transpiled type def, @see @function getDefinitionMetaData
+ */
+const transpileDef = (defClassName, schemaDefinitions) => {
+  const defMeta = schemaDefinitions[defClassName];  
+  const {
+    className,
+    inheritances,
+    implementations,
+    transpiledDef,
+    isTranspiling,
+  } = defMeta;
+  let properties = defMeta.properties;
+
+  //already transpiled
+  if (transpiledDef) {
+    return defMeta;
+  }
+
+  //transpiling means a circular reference is found
+  if (isTranspiling) {
+    throw new Error('Circular reference found while transpiling "' + className + '"');
+  }
+
+  //if definition either extends or implements, it needs transpiling
+  if (inheritances || implementations) {
+    defMeta.isTranspiling = true;
+    schemaDefinitions[className] = defMeta;
+
+    if (inheritances) {
+      for (let inheritedClass of inheritances) {
+        const inheritanceMeta = transpileDef(inheritedClass, schemaDefinitions);
+        properties = mergeProperties(properties, inheritanceMeta.properties); 
+      }
+    }
+
+    if (implementations) {
+      for (let implementedClass of implementations.reverse()) {
+        const implementationMeta = transpileDef(implementedClass, schemaDefinitions);
+        properties = mergeProperties(properties, implementationMeta.properties); 
+      }
+    }
+
+    defMeta.properties = properties;
+    defMeta.transpiledDef = generateDef(defMeta);
+    //flipping the flag off after transpilation is completed
+    defMeta.isTranspiling = false;
+  }
+
+  return defMeta;
+}
+
+/**
+ * Transpiles schema to support type|input|interface inheritance
+ * 
+ * @argument String schema - graphql schema string
+ * @returns String transpiled schema string
  */
 const transpileSchema = schema => {
   let transpiledSchema = schema;
   const definitions = getSchemaDefinitions(schema);
-  //match all definitions using "inherits" keyword
-  const inheritanceRegex = /(input|type|interface)\s+[a-zA-Z_]+\s+inherits\s+[a-zA-Z_\s,]+\s+{([^}]+)}/ig;
-  const defsWithInheritance = schema.match(inheritanceRegex);
-  if (defsWithInheritance) {
-    //transpile the definitions and replace them in the schema
-    for (let inheritanceDef of defsWithInheritance) {
-      const transpiledDef = transpileDef(inheritanceDef, definitions);
-      transpiledSchema = transpiledSchema.replace(inheritanceDef, transpiledDef);    
+
+  for (let className in definitions) {    
+    const defMeta = transpileDef(className, definitions);
+    //if a transpiled version exist, replace the original def
+    if (defMeta.transpiledDef) {      
+      transpiledSchema = transpiledSchema.replace(defMeta.definition, defMeta.transpiledDef);
     }
   }
   return transpiledSchema;

@@ -1,4 +1,4 @@
-# graphql-type-inheritance
+# graphql-schema-transpiler
 Transpile Your Graphql Schema To Support Type Inheritance
 This is a transpiler to allow graphql schema to have inheritance between type, input and interface
 Single and multiple inheritance are supported amount type, input and interface
@@ -10,9 +10,9 @@ GraphQL natively doesn't support type inheritance. Therefore when writing schema
 
 # How To Use It
 ```js
-const { transpileSchema } = require('graphql-type-inheritance');
+const { transpileSchema } = require('graphql-schema-transpiler');
 //or
-// import { transpileSchema } from 'graphql-type-inheritance';
+// import { transpileSchema } from 'graphql-schema-transpiler';
 
 const schema = `
 
@@ -22,34 +22,29 @@ interface Personal {
     lastName: String!
 }
 
-interface Professional inherits Personal {
+interface Professional extends Personal {
     company: String
     jobTitle: String
 }
 
 type Contact implements Professional {
     contactId: ID!
-    firstName: String!
-    middleName: String
-    lastName: String!
-    company: String
-    jobTitle: String
 }
 
-type EmailContact inherits Contact {
+type EmailContact extends Contact {
     emailAddress: String!
 }
 
-type PhoneContact inherits Contact {
+type PhoneContact extends Contact {
     phone: String!
 }
 
-type AddressBook inherits EmailContact, PhoneContact {
+type AddressBook extends EmailContact, PhoneContact {
     
 }
 
 //provide default to override inheritted field
-input AddressBookInput inherits AddressBook {
+input AddressBookInput extends AddressBook {
     contactId: ID
 }
 
@@ -144,7 +139,7 @@ type Person {
     lastName: String!
 }
 
-type Employee inherits Person {
+type Employee extends Person {
     jobTitle: String!
     company: String!
 }
@@ -167,7 +162,7 @@ type Address {
     state: String
 }
 
-type Person inherits Node, Address {
+type Person extends Node, Address {
 }
 
 `
@@ -186,7 +181,7 @@ input Address {
     state: String
 }
 
-type AddressInput inherits Address {
+type AddressInput extends Address {
     id: Int
 }
 
@@ -203,7 +198,40 @@ interface Element {
     id: ID!
 }
 
-interface DomElement inherits Element {
+interface DomElement extends Element {
+    path: String!
+}
+
+`
+```
+
+
+## Implementation
+
+```js
+const schema = `
+
+interface Element {
+    id: ID!
+}
+
+type DomElement implements Element {
+    path: String!
+}
+
+`
+
+//will transpile into
+const transpiledSchema = `
+
+interface Element {
+    id: ID!
+    name: String!
+}
+
+type DomElement implements Element {
+    id: ID!
+    name: String!
     path: String!
 }
 
