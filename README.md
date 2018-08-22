@@ -8,6 +8,10 @@ Single and multiple inheritance are supported amount type, input and interface
 GraphQL natively doesn't support type inheritance. Therefore when writing schema, there tends to be a lot of repeated code. The purpose of this project is to introduce type inheritance to reduce/elimate repeated code and make writing schema much easier and cleaner. This allows single/multiple inheritance between `type`, `input`, and `interface`
 
 
+# Installation
+`npm install graphql-schema-transpiler --save`
+
+
 # How To Use It
 ```js
 const { transpileSchema } = require('graphql-schema-transpiler');
