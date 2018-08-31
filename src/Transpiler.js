@@ -1,7 +1,7 @@
 import TypeDefinition from './TypeDefinition';
 
 export default class Transpiler {
-  
+
   /**
    * 
    * @param {Object} options transpiler options
@@ -47,6 +47,9 @@ export default class Transpiler {
     for (let className in definitions) {    
       this.transpileDef(className, definitions);
     }
+
+    console.log(definitions['Query']);
+    
 
     //have to use a different loop to add the transpiled defs 
     //since the above transpileDef function might add data to the definitions array 
@@ -105,6 +108,16 @@ export default class Transpiler {
     for (let def of defs) {
       const metaData = this.getDefinitionMetaData(def);    
       definitions[metaData.className] = metaData;    
+    }
+
+    //extend regex to add properties to existing types
+    const extendRegex = /extend\s+(input|type|interface)\s+\w+\s+{([^}]+)}/ig;
+    const extendDefs = schema.match(extendRegex);
+    for (let extendDef of extendDefs) {
+      const typeDef = new TypeDefinition(extendDef);
+      const className = typeDef.getClassName();
+      const defMeta = definitions[className];
+      defMeta.properties = this.mergeProperties(defMeta.properties, typeDef.getProperties());
     }
     return definitions;
   }
