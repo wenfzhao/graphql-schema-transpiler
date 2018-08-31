@@ -9,19 +9,7 @@ import Transpiler from './Transpiler';
  * type based on the current property `type` defined
  * 
  * @param {string} schema - graphql schema string
- * @param {Object} options - transpiler options 
- * `
- *  {
- *    addMissingTypesAndInputs: false, 
- *    debug: false,
- *  }
- * `
- * - addMissingTypesAndInputs: 
- *    Allows transpiler to auto fix and create new type definition from a related type(ie, Book and BookInput) 
- *    when incompatible types are found inside a Type definition such as having an property with `Input` type 
- *    in a output `Type` definition is a violation of GraphQL schema defintion.
- * - debug:
- *    Enable debug log
+ * @param {boolean} addMissingTypeOrInput - Add missing type or input definition if the property has an incompatible type. 
  * @returns {string} transpiled schema string
  */
 const transpileSchema = (schema, options = {}) => {
