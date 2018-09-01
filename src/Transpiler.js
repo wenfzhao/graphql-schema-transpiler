@@ -43,13 +43,9 @@ export default class Transpiler {
     this.log('Transpiling schema ... ');
     let transpiledSchema = schema;
     const definitions = this.getSchemaDefinitions(schema);
-
     for (let className in definitions) {    
       this.transpileDef(className, definitions);
-    }
-
-    console.log(definitions['Query']);
-    
+    }    
 
     //have to use a different loop to add the transpiled defs 
     //since the above transpileDef function might add data to the definitions array 
@@ -103,22 +99,20 @@ export default class Transpiler {
     const definitions = {};
 
     //regex to match all definitions
-    const regex = /(input|type|interface)\s+[a-zA-Z_]+\s+(extends\s+[a-zA-Z_\s,]+\s+)?(implements\s+[a-zA-Z_\s,]+\s+)?{([^}]+)}/ig;
+    const regex = /(extend\s+)?(input|type|interface)\s+[a-zA-Z_]+\s+(extends\s+[a-zA-Z_\s,]+\s+)?(implements\s+[a-zA-Z_\s,]+\s+)?{([^}]+)}/ig;
     const defs = schema.match(regex);
-    for (let def of defs) {
-      const metaData = this.getDefinitionMetaData(def);    
-      definitions[metaData.className] = metaData;    
+    if (defs) {
+      for (let def of defs) {
+        const metaData = this.getDefinitionMetaData(def);
+        // extend input|type|interface ...
+        if (definitions[metaData.className] && def.startsWith('extend')) {
+          definitions[metaData.className]['properties'] = this.mergeProperties(definitions[metaData.className]['properties'], metaData['properties']);
+        } else {
+          definitions[metaData.className] = metaData;  
+        }  
+      }
     }
-
-    //extend regex to add properties to existing types
-    const extendRegex = /extend\s+(input|type|interface)\s+\w+\s+{([^}]+)}/ig;
-    const extendDefs = schema.match(extendRegex);
-    for (let extendDef of extendDefs) {
-      const typeDef = new TypeDefinition(extendDef);
-      const className = typeDef.getClassName();
-      const defMeta = definitions[className];
-      defMeta.properties = this.mergeProperties(defMeta.properties, typeDef.getProperties());
-    }
+    
     return definitions;
   }
 
