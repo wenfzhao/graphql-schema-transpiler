@@ -3,8 +3,9 @@ export default class TypeDefinition {
   /**
    * @param {string} def - type definition
    */
-  constructor(def) {
-    this.def = def;
+  constructor(def) {    
+    //strip out leading spaces and new lines
+    this.def = def.replace(/^[\s|\n]*/g, '');
   }
 
   /**
