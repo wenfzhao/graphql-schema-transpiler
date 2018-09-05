@@ -7,7 +7,7 @@ GraphQL natively doesn't support type inheritance. Therefore when writing schema
 ## Features
   - Inheritance for `type`, `input`, `interface`
   - When implements `interface`, all fields are copied over
-  - Allow inheritance between `type` and `input` to allow code reuse
+  - Allow inheritance between `type` and `input`
 
 
 ## Installation
@@ -70,7 +70,9 @@ input BookInput extends Book {
 `
 
 //transpile schema string
-const transpiledSchema = transpileSchema(schema);
+const transpiledSchema = transpileSchema(schema, {
+  addMissingTypesAndInputs: true,
+});
 
 //will transpile into
 const transpiledSchema = `
