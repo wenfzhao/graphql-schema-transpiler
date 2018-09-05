@@ -1,7 +1,7 @@
 # graphql-schema-transpiler
-Transpile Your Graphql Schema To Support Type Inheritance
+Transpile Your GraphQL Schema To Support Type Inheritance
 This is a transpiler to allow graphql schema to have inheritance between type, input and interface.
-GraphQL natively doesn't support type inheritance. Therefore when writing schema, there tends to be a lot of repeated code. The purpose of this project is to introduce type inheritance to reduce/elimate repeated code and make writing schema much easier and cleaner. This allows single/multiple inheritance between `type`, `input`, and `interface`
+Allows single/multiple inheritance among `type`, `input`, and `interface` to reduce/elimate repeated code and make writing schema much easier and cleaner.
 
 
 ## Features
@@ -125,7 +125,7 @@ input AuthorInput implements Searchable {
 
 [**Type Inheritance**](#type-inheritance)
 
-## Single Inheritance
+### Single Inheritance
 
 ```js
 const schema = `
@@ -144,7 +144,7 @@ type Employee extends Person {
 ```
 
 
-## Multiple Inheritance
+### Multiple Inheritance
 
 ```js
 const schema = `
@@ -186,7 +186,7 @@ type AddressInput extends Address {
 ```
 
 
-## Interface Inheritance
+### Interface Inheritance
 
 ```js
 const schema = `
@@ -203,7 +203,7 @@ interface DomElement extends Element {
 ```
 
 
-## Implementation
+### Implementation
 
 ```js
 const schema = `
