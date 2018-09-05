@@ -1,4 +1,5 @@
 import Transpiler from '../src/Transpiler';
+import TypeDefinition from '../src/TypeDefinition';
 
 const compressString = function(string) { 
   return string.replace(/[\n\r]+/g, '').replace(/[\t\r]+/g, '').replace(/ /g,'') 
@@ -147,4 +148,36 @@ describe('GraphQL Schema Transpiler', () => {
     });     
     expect(compressString(transpiler.transpile(schema))).toEqual(compressString(transpiledSchema));
   });
+
+  test('generateDef', () => {
+    const schema = `
+      input TeachInput extends PersonInput implements HumanInput {
+        school: SchoolInput
+        teachId: Int!
+        facultyId: Int!
+        firstName: String!
+        middleName: String
+        lastName: String!
+        address: AddressInput!
+      } 
+    `;
+    const transpiledDef = `
+      input TeachInput implements HumanInput {
+        school: SchoolInput
+        teachId: Int!
+        facultyId: Int!
+        firstName: String!
+        middleName: String
+        lastName: String!
+        address: AddressInput!
+      }
+    `;
+
+    const transpiler = new Transpiler({
+      addMissingTypesAndInputs: true,
+    });     
+    const typeDef = new TypeDefinition(schema);
+    expect(compressString(transpiler.generateDef(typeDef.getMetaData()))).toEqual(compressString(transpiledDef));
+  });
+  
 });
