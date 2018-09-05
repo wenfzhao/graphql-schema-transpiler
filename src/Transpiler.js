@@ -151,7 +151,7 @@ export default class Transpiler {
       defMeta.isTranspiling = true;
       schemaDefinitions[className] = defMeta;
   
-      if (inheritances) {        
+      if (inheritances) {                
         for (let inheritedClass of inheritances) {
           //definition meta data of the inheritted class
           const inheritanceMeta = this.transpileDef(inheritedClass, schemaDefinitions);
@@ -313,7 +313,12 @@ export default class Transpiler {
             def = def.replace(propertyTypeDef.className, newPropertyType);
             const newTypeDefMeta = this.getDefinitionMetaData(def);
             newTypeDefMeta.isNew = true;
-            newTypeDefMeta.inheritances = newTypeDefMeta.inheritances ? newTypeDefMeta.inheritances.push(propertyTypeDef.className) : [propertyTypeDef.className];
+            //add the new inheritances
+            if (newTypeDefMeta.inheritances) {
+              newTypeDefMeta.inheritances.push(propertyTypeDef.className);
+            } else {
+              newTypeDefMeta.inheritances = [propertyTypeDef.className];
+            }
             schemaDefinitions[newTypeDefMeta.className] = newTypeDefMeta;
             //transpile the new definition
             this.transpileDef(newTypeDefMeta.className, schemaDefinitions, true);   
