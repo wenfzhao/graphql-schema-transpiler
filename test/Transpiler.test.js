@@ -179,5 +179,50 @@ describe('GraphQL Schema Transpiler', () => {
     const typeDef = new TypeDefinition(schema);
     expect(compressString(transpiler.generateDef(typeDef.getMetaData()))).toEqual(compressString(transpiledDef));
   });
+
+  test('test directive', () => {
+    const schema = `
+      directive @upper on FIELD_DEFINITION
+      directive @date(format: String) on FIELD_DEFINITION
+
+      scalar Date
+
+      type Person {
+        firstName: String! @upper
+        middleName: String @upper
+        lastName: String! @upper
+        birthDate: Date @date(format: "mmmm d yyyy")
+      }
+
+      type Student extends Person {
+        studentId: Int!
+      }
+    `;
+
+    const transpiledSchema = `
+      directive @upper on FIELD_DEFINITION
+      directive @date(format: String) on FIELD_DEFINITION
+
+      scalar Date
+
+      type Person {
+        firstName: String! @upper
+        middleName: String @upper
+        lastName: String! @upper
+        birthDate: Date @date(format: "mmmm d yyyy")
+      }
+
+      type Student {
+        studentId: Int!
+        firstName: String! @upper
+        middleName: String @upper
+        lastName: String! @upper
+        birthDate: Date @date(format: "mmmm d yyyy")
+      }
+    `;
+
+    const transpiler = new Transpiler(); 
+    expect(compressString(transpiler.transpile(schema))).toEqual(compressString(transpiledSchema));
+  });
   
 });
